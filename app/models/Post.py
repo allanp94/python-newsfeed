@@ -1,6 +1,5 @@
 from sqlalchemy import Column, Integer, String,ForeignKey,DateTime,select, func
 from datetime import datetime
-
 from .Vote import Vote
 from app.db import Base
 from sqlalchemy.orm import relationship, column_property
