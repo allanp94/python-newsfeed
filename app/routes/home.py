@@ -30,6 +30,7 @@ def single(id):
     #get single post by id 
     db = get_db()
     post = db.query(Post).filter(Post.id == id).one()
+    print(post)
 
     #remder single post template
     return render_template(
