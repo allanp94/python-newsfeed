@@ -1,3 +1,4 @@
+from email import message
 import re
 from flask import Blueprint, json, request, jsonify, session
 from app.models import User, Post, Comment, Vote
@@ -109,3 +110,63 @@ def upvote():
         return jsonify(message = 'Upvote failed'), 500
 
     return '' , 204
+
+
+@bp.route('/posts/', method=['POST'])
+def create():
+    data = request.get_json()
+    db = get_db()
+
+    try:
+        #create a new post
+        newPost = Post(
+            title = data['title'],
+            post_url = data['post_url'],
+            user_id = session.get('user_id')
+        )
+
+        db.add(newPost)
+        db.commit()
+    except:
+        print(sys.exc_info()[0])
+        db.rollback() # rollback the database entry if the post creation attempt fails
+        return jsonify(message = 'Post failed'), 500
+
+    return jsonify(id = newPost.id)
+
+@bp.route('posts/<id>', methods=['PUT'])
+def update(id):
+    data = request.get_json()
+    db = get_db()
+
+    try:
+        #retrieve post and update it 
+        post = db.query(Post).filter(Post.id == id).one()
+        post.title = data['title']
+        db.commit()
+
+    except:
+        print(sys.exc_info()[0])
+
+        db.rollback()
+        return jsonify(message = 'Post not found'), 404
+    
+    return '', 204
+
+@bp.route('posts/<id>', methods=['DELETE'])
+def delete():
+    data = request.get_json()
+    db = get_db()
+
+    try:
+        #find post and delete it
+        findPost = db.query(Post).filter(Post.id == id).one()
+        db.delete(findPost)
+        db.commit()
+    
+    except:
+        print(sys.exc_info()[0])
+        db.rollback()
+        return jsonify(message = 'Post not found'), 404
+    
+    return '', 204
